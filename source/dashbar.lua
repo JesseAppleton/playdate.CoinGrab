@@ -1,23 +1,25 @@
-import "CoreLibs/object"
-import "CoreLibs/graphics"
-import "CoreLibs/sprites"
-import "CoreLibs/timer"
-
 local gfx <const> = playdate.graphics
 
 class('Dashbar').extends(gfx.sprite)
 
-function Dashbar:init(x, y, maxTime)
+function Dashbar:init(x, y)
     Dashbar.super.init(self)
-    self.maxTime = maxTime
+    self.maxTime = 100
+    self.dashOnCooldown = false
     self.currentTime = 0
-    self.dashTime = 2 * 1000
     self:moveTo(x, y)
     self:updateTime()
     self:add()
 end
 
 function Dashbar:updateTime()
+    if self.currentTime < self.maxTime then
+        self.dashOnCooldown = true
+        self.currentTime += 1
+        if self.currentTime >= self.maxTime then
+            self.dashOnCooldown = false
+        end
+    end
     local maxWidth = 40
     local height = 5
     local dashbarWidth = (self.currentTime / self.maxTime) * maxWidth
@@ -26,12 +28,4 @@ function Dashbar:updateTime()
         gfx.fillRect(0, 0, dashbarWidth, height)
     gfx.popContext()
     self:setImage(dashbarImage)
-end
-
-local dashTimer = nil
-local dashTime = 30 * 1000
-
-
-local function resetTimer()
-    dashTimer = playdate.timer.new(dashTime, dashTime, 0, playdate.easingFunctions.linear)
 end
